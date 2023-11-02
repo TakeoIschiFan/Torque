@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "bencode.h"
+#include "conn.h"
 
-int main(void){
-    printf("Hello, mom\n");
-
-    FILE* torrent_file = fopen("test.torrent", "rb");
+void torrent_stuff(void){
+        FILE* torrent_file = fopen("test.torrent", "rb");
 
     //get file size
     fseek(torrent_file, 0, SEEK_END);
@@ -14,9 +14,9 @@ int main(void){
 
     printf("found .torrent file of length %ld bytes\n", size);
 
+    //read the entire file into memory
     char* contents = malloc(size);
     fread(contents, size, 1, torrent_file);
-
 
     bencode_context context = {
         .raw = contents,
@@ -28,5 +28,34 @@ int main(void){
     bencode_item* item = decode_bencode_item(&context);
     print_bencode(item);
 
+}
+
+void socket_stuff(void){
+    connection_context context = {
+        .adress = "127.0.0.1",
+        .port = 6969
+    };
+    bool succes = connection_init(&context);
+    if (!succes){
+        exit(1);
+    }
+    printf("socket initialized succesfully.\n");
+
+    succes = connection_connect(&context);
+    if (!succes){
+        exit(1);
+    }
+    printf("socket connected succesfully.\n");
+
+    const char* message = "hello server\n";
+
+    connection_send_string(&context, message);
+    char* recbuf = malloc(2048);
+    connection_receive(&context, recbuf, 2048);
+    printf("received: %s\n", recbuf);
+    free(recbuf);
+}
+int main(void){
+    socket_stuff();
     return 0;
 }

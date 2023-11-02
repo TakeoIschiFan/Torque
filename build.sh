@@ -7,6 +7,6 @@ CC="clang"
 CFLAGS="-Wall -Wextra"
 
 LIBS=""
-SRC="main.c bencode.c"
+SRC="main.c bencode.c conn.c"
 
 $CC $CFLAGS -o torque $SRC $LIBS
