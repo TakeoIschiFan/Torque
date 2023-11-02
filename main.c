@@ -5,7 +5,7 @@
 #include "conn.h"
 
 void torrent_stuff(void){
-        FILE* torrent_file = fopen("test.torrent", "rb");
+    FILE* torrent_file = fopen("test.torrent", "rb");
 
     //get file size
     fseek(torrent_file, 0, SEEK_END);
@@ -50,12 +50,16 @@ void socket_stuff(void){
     const char* message = "hello server\n";
 
     connection_send_string(&context, message);
-    char* recbuf = malloc(2048);
-    connection_receive(&context, recbuf, 2048);
-    printf("received: %s\n", recbuf);
-    free(recbuf);
+    char* str = connection_receive_string(&context);
+    printf("received: %s\n", str);
+    free(str);
+}
+
+void http_stuff(void){
+    http1_get("google.com", "", 0, 0);
 }
 int main(void){
-    socket_stuff();
+    http_stuff();
+    //socket_stuff();
     return 0;
 }

@@ -16,10 +16,16 @@ typedef struct {
 } connection_context;
 
 bool connection_init(connection_context* context);
+bool connection_init_override_ip(connection_context* context, const struct in_addr* ip);
 bool connection_connect(connection_context* context);
 void connection_send(connection_context* context, unsigned char* data, unsigned int length);
 void connection_send_string(connection_context* context, const char* cstring);
-void connection_receive(connection_context* context, unsigned char* data, unsigned int length);
+long connection_receive(connection_context* context, unsigned char* data, unsigned int buffer_size);
+char* connection_receive_string(connection_context* context);
 bool connection_close_and_free(connection_context* context);
 
 // high level http stuff
+
+
+bool http1_get(const char* host, const char* path, char* response_buffer, unsigned int response_buffer_size);
+
