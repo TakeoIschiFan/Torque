@@ -144,6 +144,8 @@ bool http1_get(const char* host, const char* path, char* response_buffer, unsign
     char* resp = connection_receive_string(&http_context);
     printf("%s\n", resp);
 
+    free(resp);
+
     connection_close_and_free(&http_context);
     return true;
 }
