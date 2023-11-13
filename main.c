@@ -27,7 +27,7 @@ void torrent_stuff(void){
     };
 
     bencode_item* item = decode_bencode_item(&context);
-    print_bencode(item);
+    bencode_print(item);
 
 }
 

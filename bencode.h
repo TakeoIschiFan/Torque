@@ -39,11 +39,12 @@ typedef struct {
     unsigned int info_end_idx;
 } bencode_context;
 
-bencode_item* search(bencode_context* context, char* key_name);
-void print_bencode(bencode_item* src);
-void free_bencode_item(bencode_item* item);
+bencode_item* bencode_search(bencode_context* context, char* key_name);
+void bencode_print(bencode_item* src);
+void bencode_free(bencode_item* item);
 
 bencode_item* decode_bencode_item(bencode_context* context);
+bencode_item* decode_bencode_cstring(const char* cstr);
 bencode_item* decode_bencode_string(bencode_context* context);
 bencode_item* decode_bencode_int(bencode_context* context);
 bencode_item* decode_bencode_list(bencode_context* context);

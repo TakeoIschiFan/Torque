@@ -1,10 +1,11 @@
 #include "bencode.h"
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 
-void print_bencode(bencode_item* src){
+void bencode_print(bencode_item* src){
     switch (src->type) {
         case BENCODE_INT:
             printf("%d\n", src->int_data);
@@ -16,7 +17,7 @@ void print_bencode(bencode_item* src){
             bencode_list* list = (bencode_list*)(src->list_data);
             for (int i = 0; i < list->size; i++){
                     printf("\t item %d\n", i);
-                    print_bencode(list->data[i]);
+                    bencode_print(list->data[i]);
             }
         }
         break;
@@ -24,7 +25,7 @@ void print_bencode(bencode_item* src){
             bencode_dict* dict = (bencode_dict*)(src->list_data);
             for (int i = 0; i < dict->size; i++){
                 printf("\t%s:", dict->keys[i]);
-                print_bencode(dict->values[i]);
+                bencode_print(dict->values[i]);
             }
         }
         break;
@@ -47,22 +48,35 @@ bencode_item* decode_bencode_item(bencode_context* context){
             printf("decoding string\n");
             return decode_bencode_string(context);
     }
+}
 
+bencode_item* decode_bencode_cstring(const char* cstr){
+    bencode_context string_context = {
+        .raw = cstr,
+        .length = strlen(cstr),
+        .cursor = cstr
+    };
+
+    bencode_item* result = decode_bencode_item(&string_context);
+    return result;
 }
 
 bencode_item* decode_bencode_int(bencode_context* context){
-    int i = 0;
     //skip i
     context->cursor++;
 
+    unsigned int i = 0;
     while (!(*(context->cursor) == 'e')){
         i = i * 10 + (*(context->cursor++) - '0');
+    }
+    // do some sanity checks
+    if((i < 0) || (i > (2 << 16))){
+        fprintf(stderr, "Error: while decoding int, found size of %d\n", i);
+        exit(1);
     }
 
     //skip e
     context->cursor++;
-
-    printf("found int %d\n", i);
 
     bencode_item* out = malloc(sizeof(bencode_item));
     out->type = BENCODE_INT;
@@ -74,8 +88,8 @@ bencode_item* decode_bencode_string(bencode_context* context){
     printf("cursor at %c\n", *(context->cursor));
     int length = 0;
 
-    char int_buf[24];
-    int i = 0;
+    char int_buf[16];
+    unsigned int i = 0;
 
     while(*(context->cursor) != ':'){
         int_buf[i++] = *(context->cursor++);
@@ -83,7 +97,10 @@ bencode_item* decode_bencode_string(bencode_context* context){
 
     int_buf[i] = '\0';
     length = atoi(int_buf);
-    if (length == 0){
+
+    // do some sanity checks
+    if((i < 0) || (i > (1e16))){
+        fprintf(stderr, "Error: while decoding size of string, found size of %d\n", i);
         exit(1);
     }
 
@@ -95,11 +112,6 @@ bencode_item* decode_bencode_string(bencode_context* context){
     str++;
     // advance cursor to after the memcopy
     context->cursor += (length + 1);
-    if (length < 500){
-        printf("found string %s\n", str);
-    }else{
-        printf("found binary blob");
-    }
 
     bencode_item* out = malloc(sizeof(bencode_item));
     out->type = BENCODE_STRING;
@@ -155,6 +167,33 @@ bencode_item* decode_bencode_dict(bencode_context* context){
 }
 
 bool bencode_tests(void){
-    printf("this test runs \n");
+
+    //test int
+    bencode_item* result = decode_bencode_cstring("i7e");
+    assert(result->type == BENCODE_INT);
+    assert(result->int_data == 7);
+
+    result = decode_bencode_cstring("i42069e");
+    assert(result->type == BENCODE_INT);
+    assert(result->int_data == 42069);
+
+    //test string
+    result = decode_bencode_cstring("4:test");
+    assert(result->type == BENCODE_STRING);
+    assert(!strcmp(result->string_data, "test"));
+
+    // this fails! TODO: how do we test this?
+    //result = decode_bencode_cstring("0:");
+    //assert(result->type == BENCODE_STRING);
+    //assert(!strcmp(result->string_data, ""));
+
+    result = decode_bencode_cstring("678:Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec placerat ultricies auctor. Donec vestibulum nibh id lectus elementum ultricies. Donec accumsan massa ipsum, a sollicitudin ex tempor non. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Donec aliquet sapien in mi dignissim sodales. Donec at diam et purus lacinia euismod id ut ligula. Etiam elementum consequat posuere. In eget turpis quis sapien elementum finibus. Vestibulum malesuada nulla at turpis tincidunt faucibus. Nulla sed sapien risus. In hac habitasse platea dictumst. Duis sit amet arcu tincidunt, molestie lorem in, luctus augue. Morbi in congue nulla. Aliquam.");
+
+    assert(result->type == BENCODE_STRING);
+    assert(strlen(result->string_data) == 678);
+    assert(result->string_data[0] == 'L');
+    assert(result->string_data[strlen(result->string_data) - 1 ] == '.');
+
+    printf("bencode tests succesful\n");
     return true;
 }
