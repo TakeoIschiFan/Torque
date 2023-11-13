@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 void print_bencode(bencode_item* src){
     switch (src->type) {
@@ -151,4 +152,9 @@ bencode_item* decode_bencode_dict(bencode_context* context){
     out->type = BENCODE_DICT;
     out->dict_data = dict;
     return out;
+}
+
+bool bencode_tests(void){
+    printf("this test runs \n");
+    return true;
 }

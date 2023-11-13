@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdbool.h>
+
 typedef enum {
     BENCODE_INT,
     BENCODE_STRING,
@@ -46,4 +48,6 @@ bencode_item* decode_bencode_string(bencode_context* context);
 bencode_item* decode_bencode_int(bencode_context* context);
 bencode_item* decode_bencode_list(bencode_context* context);
 bencode_item* decode_bencode_dict(bencode_context* context);
+
+bool bencode_tests(void);
 

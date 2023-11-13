@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include "bencode.h"
 #include "network.h"
@@ -58,8 +59,16 @@ void socket_stuff(void){
 void http_stuff(void){
     http1_get("google.com", "", 0, 0);
 }
+
+void tests(){
+    bool out = bencode_tests();
+}
+
 int main(void){
-    http_stuff();
+#ifdef TESTS
+    tests();
+#endif
+    //http_stuff();
     //socket_stuff();
     return 0;
 }
