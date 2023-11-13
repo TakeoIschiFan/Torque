@@ -17,16 +17,16 @@ I have tried to keep the source code as clean and minimal as possible so it shou
 
 Development status
 - [ ] Bencode parser
-    - [v] Parsing of bencode strings, ints
-    - [v] Parsing of bencode dicts, lists, simple bencode files
+    - [x] Parsing of bencode strings, ints
+    - [x] Parsing of bencode dicts, lists, simple bencode files
     - [ ] Parsing of .torrent files
 	    Bug: doesn't read length of raw binary data correctly
-- [v] TCP client
-	- [v] Implement connect, close, send receive functions
-	- [v] Able to ping-pong a echo server
+- [x] TCP client
+	- [x] Implement connect, close, send receive functions
+	- [x] Able to ping-pong a echo server
 - [ ] HTTP client
-	- [v] DNS lookup to get server IPs from hostnames
-	- [v] HTTP GET
+	- [x] DNS lookup to get server IPs from hostnames
+	- [x] HTTP GET
 		Able to get HTTP 200 HTML data from [example.com](example.com)
 		Query parameters unsupported for now
 	- [ ] HTTP POST

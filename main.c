@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "bencode.h"
-#include "conn.h"
+#include "network.h"
 
 void torrent_stuff(void){
     FILE* torrent_file = fopen("test.torrent", "rb");
