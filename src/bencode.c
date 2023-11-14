@@ -97,6 +97,7 @@ bencode_item* decode_bencode_int(bencode_context* context){
 
     // do some sanity checks
     if((i < 0) || (i > (2 << 16))){
+        // NOTE: Unix timestamps can trigger this branch...
         fprintf(stderr, "Warning: while decoding bencode int, found weird int of %d\n", i);
     }
 

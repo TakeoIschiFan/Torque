@@ -12,7 +12,7 @@ fi
 
 
 LIBS=""
-SRC="main.c bencode.c network.c"
+SRC="src/main.c src/bencode.c src/network.c src/torrent.c"
 
 $CC $CFLAGS -o torque $SRC $LIBS
 

@@ -1,10 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
-#include "bencode.h"
-#include "network.h"
-
 void torrent_stuff(void){
     FILE* torrent_file = fopen("test.torrent", "rb");
 
@@ -58,17 +51,4 @@ void socket_stuff(void){
 
 void http_stuff(void){
     http1_get("google.com", "", 0, 0);
-}
-
-void tests(){
-    bool out = bencode_tests();
-}
-
-int main(void){
-#ifdef TESTS
-    tests();
-#endif
-    //http_stuff();
-    //socket_stuff();
-    return 0;
 }
