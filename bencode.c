@@ -32,6 +32,28 @@ void bencode_print(bencode_item* src){
     }
 }
 
+bencode_item* bencode_search(bencode_item* root, const char* key_name){
+    if (!(root->type == BENCODE_DICT)){
+        return NULL;
+    }
+
+    bencode_dict* dict_data = (bencode_dict*) root->dict_data;
+
+    for (int i = 0; i < dict_data->size; i++){
+        char* key = dict_data->keys[i];
+        bencode_item* item = dict_data->values[i];
+        printf("searching for key %s, found %s\n", key_name, key);
+        if (!strcmp(key, key_name)){
+            return item;
+        }
+
+        bencode_item* result = bencode_search(item, key_name);
+        if (result != NULL){
+            return result;
+        }
+    }
+    return NULL;
+}
 
 bencode_item* decode_bencode_item(bencode_context* context){
     switch (*(context->cursor)) {
@@ -65,19 +87,21 @@ bencode_item* decode_bencode_int(bencode_context* context){
     //skip i
     context->cursor++;
 
+    // TODO: negative numbers can be encoded by starting the string of digits with -
+    // TODO: zero leading numbers aren't allowed except for 0 itself (i.e. "i0e")
+
     unsigned int i = 0;
     while (!(*(context->cursor) == 'e')){
         i = i * 10 + (*(context->cursor++) - '0');
     }
+
     // do some sanity checks
     if((i < 0) || (i > (2 << 16))){
-        fprintf(stderr, "Error: while decoding int, found size of %d\n", i);
-        exit(1);
+        fprintf(stderr, "Warning: while decoding bencode int, found weird int of %d\n", i);
     }
 
     //skip e
     context->cursor++;
-
     bencode_item* out = malloc(sizeof(bencode_item));
     out->type = BENCODE_INT;
     out->int_data = i;
@@ -85,7 +109,6 @@ bencode_item* decode_bencode_int(bencode_context* context){
 
 }
 bencode_item* decode_bencode_string(bencode_context* context){
-    printf("cursor at %c\n", *(context->cursor));
     int length = 0;
 
     char int_buf[16];
@@ -99,19 +122,18 @@ bencode_item* decode_bencode_string(bencode_context* context){
     length = atoi(int_buf);
 
     // do some sanity checks
-    if((i < 0) || (i > (1e16))){
-        fprintf(stderr, "Error: while decoding size of string, found size of %d\n", i);
-        exit(1);
+    if((length < 0) || (length > (1e16))){
+        fprintf(stderr, "Warning: while decoding size of string, found size of %d\n", i);
     }
 
-    char* str = malloc(length + 2); // add extra bytes for : and \0
-    memcpy(str, context->cursor, length + 1);
-    str[length+2] = '\0';
+    char* str = malloc(length + 1); // add extra byte for \0
+    context->cursor++; // skip :
+    memcpy(str, context->cursor, length);
+    str[length] = '\0';
 
     // remove :
-    str++;
     // advance cursor to after the memcopy
-    context->cursor += (length + 1);
+    context->cursor += length;
 
     bencode_item* out = malloc(sizeof(bencode_item));
     out->type = BENCODE_STRING;
@@ -193,6 +215,43 @@ bool bencode_tests(void){
     assert(strlen(result->string_data) == 678);
     assert(result->string_data[0] == 'L');
     assert(result->string_data[strlen(result->string_data) - 1 ] == '.');
+
+    // test bencode bencode_search
+    bencode_item* root = decode_bencode_cstring("d4:test3:4203:loli69e6:nestedd5:nest12:ok5:nest23:notee");
+
+    bencode_item* found = bencode_search(root, "lol");
+    assert(found != NULL);
+    assert(found->type == BENCODE_INT);
+    assert(found->int_data == 69);
+
+    found = bencode_search(root, "nest1");
+    assert(found != NULL);
+    assert(found->type == BENCODE_STRING);
+    assert(!strcmp(found->string_data, "ok"));
+
+    // test full torrent file
+    FILE* torrent_file = fopen("test2.torrent", "rb");
+
+    //get file size
+    fseek(torrent_file, 0, SEEK_END);
+    long size = ftell(torrent_file);
+    rewind(torrent_file);
+
+    //read the entire file into memory
+    char* contents = malloc(size);
+    fread(contents, size, 1, torrent_file);
+
+    bencode_context context = {
+        .raw = contents,
+        .length = size,
+        .cursor = contents,
+        .root = 0
+    };
+
+    bencode_item* item = decode_bencode_item(&context);
+    bencode_print(item);
+
+
 
     printf("bencode tests succesful\n");
     return true;
