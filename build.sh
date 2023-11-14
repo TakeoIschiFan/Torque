@@ -10,11 +10,9 @@ else
     CFLAGS=""
 fi
 
+SRC="src/main.c src/bencode.c src/network.c src/torrent.c src/sha1.c"
 
-LIBS=""
-SRC="src/main.c src/bencode.c src/network.c src/torrent.c"
-
-$CC $CFLAGS -o torque $SRC $LIBS
+$CC $CFLAGS -o torque $SRC
 
 if [ "$DEBUG" = true ]; then
     ./torque

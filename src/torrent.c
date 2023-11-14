@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "torrent.h"
 #include "bencode.h"
+#include "sha1.h"
 
 void parse_torrent_file(const char* file_path){
 
@@ -41,7 +43,7 @@ void parse_torrent_file(const char* file_path){
     bencode_item* files = bencode_search(info, "files");
      if (!(files == NULL)){
         fprintf(stderr, "Error: detected multifiles torrent file, unsupported for now.");
-        exit(1);
+        //exit(1);
     }
 
     // check for private tracker
@@ -53,8 +55,26 @@ void parse_torrent_file(const char* file_path){
         }
     }
 
-    //calculate info hash
-    //context.info_start_idx =
+    //get raw info dictionary
+    const unsigned char* raw_info = malloc(context->_info_length);
+    memcpy((void*) raw_info, context->_info_start_ptr, context->_info_length);
+
+    // sha1 encode that raw info dict
+    SHA1_CTX sha;
+    unsigned char results[20];
+
+    SHA1Init(&sha);
+    SHA1Update(&sha, raw_info, context->_info_length);
+    SHA1Final(results, &sha);
+
+    /*
+    printf("0x");
+    for (int n = 0; n < 20; n++)
+            printf("%02x", results[n]);
+    putchar('\n');
+    */
+
+
 
 
     //bencode_print(item);
@@ -64,7 +84,7 @@ void parse_torrent_file(const char* file_path){
 }
 
 bool torrent_tests(void){
-    parse_torrent_file("test2.torrent");
+    parse_torrent_file("python.torrent");
     return true;
 }
 

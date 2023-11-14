@@ -34,7 +34,7 @@ typedef struct {
     const unsigned char* raw;
     unsigned int length;
     unsigned char* cursor;
-    unsigned char* _info_start_idx;
+    unsigned char* _info_start_ptr;
     unsigned int _info_length;
 } bencode_context;
 

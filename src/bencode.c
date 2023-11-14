@@ -11,7 +11,7 @@ bencode_context* bencode_context_get(const unsigned char* buffer, const unsigned
     context->raw = buffer;
     context->cursor = (unsigned char*) buffer;
     context->length = size;
-    context->_info_start_idx = NULL;
+    context->_info_start_ptr = NULL;
     context->_info_length = 0;
 
     return context;
@@ -226,8 +226,20 @@ bencode_item* decode_bencode_dict(bencode_context* context){
         dict->values = realloc(dict->values, (dict->size+1) * sizeof(bencode_item));
 
         dict->keys[dict->size] = decode_bencode_item(context)->string_data;
-        // check for info dict
-        dict->values[dict->size] = decode_bencode_item(context);
+
+        // NOTE: if we happen to be decoding a dict with a key "info" we store its raw location in the bencode context.
+        // This is because for many torrent applications we need to calculate a hash from the raw info dict bencode data,
+        // and by doing it here we don't have to loop over the raw data again later.
+        if (!strcmp(dict->keys[dict->size], "info")){
+            if (context->_info_start_ptr == NULL){
+                printf("found the info dict!\n");
+                context->_info_start_ptr = context->cursor;
+                dict->values[dict->size] = decode_bencode_item(context);
+                context->_info_length = context->cursor - context->_info_start_ptr;
+            }
+        }else{
+            dict->values[dict->size] = decode_bencode_item(context);
+        }
 
         dict->size++;
     };
