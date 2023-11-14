@@ -1,8 +1,10 @@
 #include <stdbool.h>
 #include "bencode.h"
+#include "torrent.h"
 
-void tests(){
+void tests(void){
     bool out = bencode_tests();
+    out = torrent_tests();
 }
 
 int main(void){

@@ -35,8 +35,8 @@ typedef struct {
     unsigned int length;
     char* cursor;
     bencode_item* root;
-    unsigned int info_start_idx;
-    unsigned int info_end_idx;
+    void* info_start_idx;
+    void* info_end_idx;
 } bencode_context;
 
 void bencode_print(bencode_item* src);

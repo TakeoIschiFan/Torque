@@ -54,6 +54,43 @@ bencode_item* bencode_search(bencode_item* root, const char* key_name){
     }
     return NULL;
 }
+void bencode_free(bencode_item* item){
+    switch (item->type) {
+        case BENCODE_INT: {
+            // ints are stack allocated, so just remove the struct itself
+            break;
+        }
+        case BENCODE_STRING: {
+            free(item->string_data);
+            break;
+        }
+        case BENCODE_LIST: {
+            // free children first, then free itself
+            bencode_list* list = (bencode_list*) item->list_data;
+            for (unsigned int i = 0; i < list->size; i++){
+                bencode_free(list->data[i]);
+            }
+            free(list->data);
+            free(list);
+            break;
+        }
+        case BENCODE_DICT: {
+            // free children first, then free itself
+            bencode_dict* dict = (bencode_dict*) item->dict_data;
+            for (unsigned int i = 0; i < dict->size; i++){
+                free(dict->keys[i]);
+                bencode_free(dict->values[i]);
+            }
+
+            free(dict->keys);
+            free(dict->values);
+            free(dict);
+            break;
+        }
+    }
+
+    free(item);
+}
 
 bencode_item* decode_bencode_item(bencode_context* context){
     switch (*(context->cursor)) {
@@ -229,30 +266,6 @@ bool bencode_tests(void){
     assert(found != NULL);
     assert(found->type == BENCODE_STRING);
     assert(!strcmp(found->string_data, "ok"));
-
-    // test full torrent file
-    FILE* torrent_file = fopen("test2.torrent", "rb");
-
-    //get file size
-    fseek(torrent_file, 0, SEEK_END);
-    long size = ftell(torrent_file);
-    rewind(torrent_file);
-
-    //read the entire file into memory
-    char* contents = malloc(size);
-    fread(contents, size, 1, torrent_file);
-
-    bencode_context context = {
-        .raw = contents,
-        .length = size,
-        .cursor = contents,
-        .root = 0
-    };
-
-    bencode_item* item = decode_bencode_item(&context);
-    bencode_print(item);
-
-
 
     printf("bencode tests succesful\n");
     return true;

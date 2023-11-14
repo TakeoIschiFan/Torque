@@ -16,11 +16,10 @@ It includes:
 I have tried to keep the source code as clean and minimal as possible so it should be quite readable for anyone who wants to take a look at the code. I am also planning on making a blog post write-up once the project is finished.
 
 Development status
-- [ ] Bencode parser
+- [x] Bencode parser
     - [x] Parsing of bencode strings, ints
     - [x] Parsing of bencode dicts, lists, simple bencode files
-    - [ ] Parsing of .torrent files
-	    Bug: doesn't read length of raw binary data correctly
+    - [x] Parsing of .torrent files
 - [x] TCP client
 	- [x] Implement connect, close, send receive functions
 	- [x] Able to ping-pong a echo server
@@ -30,8 +29,8 @@ Development status
 		Able to get HTTP 200 HTML data from [example.com](example.com)
 		Query parameters unsupported for now
 	- [ ] HTTP POST
-- [ ] Core torrent stuff
-	- [ ] Parse a torrent file and extract the info hashes
+- [x] Core torrent stuff
+	- [x] Parse a torrent file and extract the info hashes
 	- [ ] Connect to a tracker, retrieve list of peers
 	- [ ] Downloading from peers
 		- [ ] Complete Bittorrent handshake
