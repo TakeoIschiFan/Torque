@@ -25,7 +25,18 @@ char* connection_receive_string(connection_context* context);
 bool connection_close_and_free(connection_context* context);
 
 // high level http stuff
+typedef struct {
+    const char* key;
+    const char* value;
+} query_param;
 
+typedef struct {
+    const char* host;
+    const char* path;
+    query_param* params;
+    unsigned int params_size;
+} request;
 
-bool http1_get(const char* host, const char* path, char* response_buffer, unsigned int response_buffer_size);
+void add_request_param(const char* key, const char* value);
+bool http1_get(request* req, char* response_buffer, unsigned int response_buffer_size);
 

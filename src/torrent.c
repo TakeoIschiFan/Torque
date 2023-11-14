@@ -31,6 +31,7 @@ void parse_torrent_file(const char* file_path){
         fprintf(stderr, "Error: could not find *announce* field in .torrent file, it might be wrongly formatted.");
         exit(1);
     }
+    printf("found announce url: %s\n", announce->string_data);
 
     // find info dictionary
     bencode_item* info = bencode_search(item, "info");
@@ -84,7 +85,7 @@ void parse_torrent_file(const char* file_path){
 }
 
 bool torrent_tests(void){
-    parse_torrent_file("python.torrent");
+    parse_torrent_file("test2.torrent");
     return true;
 }
 
