@@ -5,6 +5,19 @@
 #include <string.h>
 #include <stdbool.h>
 
+bencode_context* bencode_context_get(const unsigned char* buffer, const unsigned int size){
+    bencode_context* context = malloc(sizeof(bencode_context));
+
+    context->raw = buffer;
+    context->cursor = (unsigned char*) buffer;
+    context->length = size;
+    context->_info_start_idx = NULL;
+    context->_info_length = 0;
+
+    return context;
+}
+void bencode_context_free();
+
 void bencode_print(bencode_item* src){
     switch (src->type) {
         case BENCODE_INT:
@@ -213,6 +226,7 @@ bencode_item* decode_bencode_dict(bencode_context* context){
         dict->values = realloc(dict->values, (dict->size+1) * sizeof(bencode_item));
 
         dict->keys[dict->size] = decode_bencode_item(context)->string_data;
+        // check for info dict
         dict->values[dict->size] = decode_bencode_item(context);
 
         dict->size++;

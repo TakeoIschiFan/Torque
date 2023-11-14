@@ -20,13 +20,8 @@ void parse_torrent_file(const char* file_path){
     char* contents = malloc(size);
     fread(contents, size, 1, torrent_file);
 
-    bencode_context context = {
-        .raw = contents,
-        .length = size,
-        .cursor = contents,
-        .root = 0
-    };
-    bencode_item* item = decode_bencode_item(&context);
+    bencode_context* context = bencode_context_get(contents, size);
+    bencode_item* item = decode_bencode_item(context);
 
     // find general stuff
     bencode_item* announce = bencode_search(item, "announce");
@@ -65,6 +60,7 @@ void parse_torrent_file(const char* file_path){
     //bencode_print(item);
     bencode_free(item);
     free(contents);
+    free(context);
 }
 
 bool torrent_tests(void){
