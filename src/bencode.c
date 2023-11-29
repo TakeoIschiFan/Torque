@@ -5,21 +5,21 @@
 #include <stdlib.h>
 #include <string.h>
 
-bencode_context *bencode_context_get(const unsigned char *buffer,
+bencode_context* bencode_context_get(const unsigned char* buffer,
                                      const unsigned int size) {
-    bencode_context *context = malloc(sizeof(bencode_context));
+    bencode_context* context = malloc(sizeof(bencode_context));
 
     context->raw = buffer;
-    context->cursor = (unsigned char *)buffer;
+    context->cursor = (unsigned char*)buffer;
     context->length = size;
     context->_info_start_ptr = NULL;
     context->_info_length = 0;
 
     return context;
 }
-void bencode_context_free();
+void bencode_context_free(void);
 
-void bencode_print(bencode_item *src) {
+void bencode_print(bencode_item* src) {
     switch (src->type) {
     case BENCODE_INT:
         printf("%d\n", src->int_data);
@@ -28,15 +28,15 @@ void bencode_print(bencode_item *src) {
         printf("%s\n", src->string_data);
         break;
     case BENCODE_LIST: {
-        bencode_list *list = (bencode_list *)(src->list_data);
-        for (int i = 0; i < list->size; i++) {
+        bencode_list* list = (bencode_list*)(src->list_data);
+        for (unsigned int i = 0; i < list->size; i++) {
             printf("\t item %d\n", i);
             bencode_print(list->data[i]);
         }
     } break;
     case BENCODE_DICT: {
-        bencode_dict *dict = (bencode_dict *)(src->list_data);
-        for (int i = 0; i < dict->size; i++) {
+        bencode_dict* dict = (bencode_dict*)(src->list_data);
+        for (unsigned int i = 0; i < dict->size; i++) {
             printf("\t%s:", dict->keys[i]);
             bencode_print(dict->values[i]);
         }
@@ -44,29 +44,29 @@ void bencode_print(bencode_item *src) {
     }
 }
 
-bencode_item *bencode_search(bencode_item *root, const char *key_name) {
+bencode_item* bencode_search(bencode_item* root, const char* key_name) {
     if (!(root->type == BENCODE_DICT)) {
         return NULL;
     }
 
-    bencode_dict *dict_data = (bencode_dict *)root->dict_data;
+    bencode_dict* dict_data = (bencode_dict*)root->dict_data;
 
-    for (int i = 0; i < dict_data->size; i++) {
-        char *key = dict_data->keys[i];
-        bencode_item *item = dict_data->values[i];
+    for (unsigned int i = 0; i < dict_data->size; i++) {
+        char* key = dict_data->keys[i];
+        bencode_item* item = dict_data->values[i];
         printf("searching for key %s, found %s\n", key_name, key);
         if (!strcmp(key, key_name)) {
             return item;
         }
 
-        bencode_item *result = bencode_search(item, key_name);
+        bencode_item* result = bencode_search(item, key_name);
         if (result != NULL) {
             return result;
         }
     }
     return NULL;
 }
-void bencode_free(bencode_item *item) {
+void bencode_free(bencode_item* item) {
     switch (item->type) {
     case BENCODE_INT: {
         // ints are stack allocated, so just remove the struct itself
@@ -78,7 +78,7 @@ void bencode_free(bencode_item *item) {
     }
     case BENCODE_LIST: {
         // free children first, then free itself
-        bencode_list *list = (bencode_list *)item->list_data;
+        bencode_list* list = (bencode_list*)item->list_data;
         for (unsigned int i = 0; i < list->size; i++) {
             bencode_free(list->data[i]);
         }
@@ -88,7 +88,7 @@ void bencode_free(bencode_item *item) {
     }
     case BENCODE_DICT: {
         // free children first, then free itself
-        bencode_dict *dict = (bencode_dict *)item->dict_data;
+        bencode_dict* dict = (bencode_dict*)item->dict_data;
         for (unsigned int i = 0; i < dict->size; i++) {
             free(dict->keys[i]);
             bencode_free(dict->values[i]);
@@ -104,7 +104,7 @@ void bencode_free(bencode_item *item) {
     free(item);
 }
 
-bencode_item *decode_bencode_item(bencode_context *context) {
+bencode_item* decode_bencode_item(bencode_context* context) {
     switch (*(context->cursor)) {
     case 'i': // integer
         printf("decoding int\n");
@@ -121,15 +121,16 @@ bencode_item *decode_bencode_item(bencode_context *context) {
     }
 }
 
-bencode_item *decode_bencode_cstring(const char *cstr) {
-    bencode_context string_context = {
-        .raw = cstr, .length = strlen(cstr), .cursor = cstr};
+bencode_item* decode_bencode_cstring(const char* cstr) {
+    bencode_context string_context = {.raw = (const unsigned char*)cstr,
+                                      .length = strlen(cstr),
+                                      .cursor = (unsigned char*)cstr};
 
-    bencode_item *result = decode_bencode_item(&string_context);
+    bencode_item* result = decode_bencode_item(&string_context);
     return result;
 }
 
-bencode_item *decode_bencode_int(bencode_context *context) {
+bencode_item* decode_bencode_int(bencode_context* context) {
     // skip i
     context->cursor++;
 
@@ -154,12 +155,12 @@ bencode_item *decode_bencode_int(bencode_context *context) {
 
     // skip e
     context->cursor++;
-    bencode_item *out = malloc(sizeof(bencode_item));
+    bencode_item* out = malloc(sizeof(bencode_item));
     out->type = BENCODE_INT;
     out->int_data = i;
     return out;
 }
-bencode_item *decode_bencode_string(bencode_context *context) {
+bencode_item* decode_bencode_string(bencode_context* context) {
     int length = 0;
 
     char int_buf[16];
@@ -179,7 +180,7 @@ bencode_item *decode_bencode_string(bencode_context *context) {
                 i);
     }
 
-    char *str = malloc(length + 1); // add extra byte for \0
+    char* str = malloc(length + 1); // add extra byte for \0
     context->cursor++;              // skip :
     memcpy(str, context->cursor, length);
     str[length] = '\0';
@@ -188,15 +189,15 @@ bencode_item *decode_bencode_string(bencode_context *context) {
     // advance cursor to after the memcopy
     context->cursor += length;
 
-    bencode_item *out = malloc(sizeof(bencode_item));
+    bencode_item* out = malloc(sizeof(bencode_item));
     out->type = BENCODE_STRING;
     out->string_data = str;
     return out;
 }
-bencode_item *decode_bencode_list(bencode_context *context) {
+bencode_item* decode_bencode_list(bencode_context* context) {
     context->cursor++; // skip the first l
 
-    bencode_list *list = malloc(sizeof(bencode_list));
+    bencode_list* list = malloc(sizeof(bencode_list));
     list->size = 0;
     list->data = NULL;
 
@@ -209,21 +210,21 @@ bencode_item *decode_bencode_list(bencode_context *context) {
 
     context->cursor++; // skip the last e
 
-    bencode_item *out = malloc(sizeof(bencode_item));
+    bencode_item* out = malloc(sizeof(bencode_item));
     out->type = BENCODE_LIST;
     out->list_data = list;
     return out;
 }
-bencode_item *decode_bencode_dict(bencode_context *context) {
+bencode_item* decode_bencode_dict(bencode_context* context) {
     context->cursor++; // skip the first d
 
-    bencode_dict *dict = malloc(sizeof(bencode_list));
+    bencode_dict* dict = malloc(sizeof(bencode_list));
     dict->size = 0;
     dict->keys = NULL;
     dict->values = NULL;
 
     while (!(*(context->cursor) == 'e')) {
-        dict->keys = realloc(dict->keys, (dict->size + 1) * sizeof(char *));
+        dict->keys = realloc(dict->keys, (dict->size + 1) * sizeof(char*));
         dict->values =
             realloc(dict->values, (dict->size + 1) * sizeof(bencode_item));
 
@@ -251,7 +252,7 @@ bencode_item *decode_bencode_dict(bencode_context *context) {
 
     context->cursor++; // skip the last e
 
-    bencode_item *out = malloc(sizeof(bencode_item));
+    bencode_item* out = malloc(sizeof(bencode_item));
     out->type = BENCODE_DICT;
     out->dict_data = dict;
     return out;
@@ -260,7 +261,7 @@ bencode_item *decode_bencode_dict(bencode_context *context) {
 bool bencode_tests(void) {
 
     // test int
-    bencode_item *result = decode_bencode_cstring("i7e");
+    bencode_item* result = decode_bencode_cstring("i7e");
     assert(result->type == BENCODE_INT);
     assert(result->int_data == 7);
 
@@ -297,10 +298,10 @@ bool bencode_tests(void) {
     assert(result->string_data[strlen(result->string_data) - 1] == '.');
 
     // test bencode bencode_search
-    bencode_item *root = decode_bencode_cstring(
+    bencode_item* root = decode_bencode_cstring(
         "d4:test3:4203:loli69e6:nestedd5:nest12:ok5:nest23:notee");
 
-    bencode_item *found = bencode_search(root, "lol");
+    bencode_item* found = bencode_search(root, "lol");
     assert(found != NULL);
     assert(found->type == BENCODE_INT);
     assert(found->int_data == 69);

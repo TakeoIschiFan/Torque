@@ -9,7 +9,7 @@
 #include <sys/socket.h> // give all the socket stuff
 #include <unistd.h>     // gives read, send, close and some other stuff
 
-bool connection_init(connection_context *context) {
+bool connection_init(connection_context* context) {
 
     context->_server_addr.sin_family = AF_INET;
     context->_server_addr.sin_addr.s_addr = inet_addr(context->adress);
@@ -27,8 +27,8 @@ bool connection_init(connection_context *context) {
     context->_socket_handle = sock;
     return true;
 }
-bool connection_init_override_ip(connection_context *context,
-                                 const struct in_addr *ip) {
+bool connection_init_override_ip(connection_context* context,
+                                 const struct in_addr* ip) {
     context->_server_addr.sin_family = AF_INET;
     memcpy(&(context->_server_addr.sin_addr.s_addr), ip,
            sizeof(context->_server_addr.sin_addr.s_addr));
@@ -47,9 +47,9 @@ bool connection_init_override_ip(connection_context *context,
     return true;
 }
 
-bool connection_connect(connection_context *context) {
+bool connection_connect(connection_context* context) {
     int returncode =
-        connect(context->_socket_handle, (void *)(&context->_server_addr),
+        connect(context->_socket_handle, (void*)(&context->_server_addr),
                 sizeof(context->_server_addr));
     if (returncode != 0) {
         int errsv = errno;
@@ -62,7 +62,7 @@ bool connection_connect(connection_context *context) {
     return true;
 }
 
-void connection_send(connection_context *context, unsigned char *data,
+void connection_send(connection_context* context, unsigned char* data,
                      unsigned int length) {
     long sent = 0;
     while (sent < length) {
@@ -78,10 +78,10 @@ void connection_send(connection_context *context, unsigned char *data,
     }
 }
 
-void connection_send_string(connection_context *context, const char *cstring) {
-    connection_send(context, (void *)cstring, strlen(cstring));
+void connection_send_string(connection_context* context, const char* cstring) {
+    connection_send(context, (void*)cstring, strlen(cstring));
 }
-long connection_receive(connection_context *context, unsigned char *data,
+long connection_receive(connection_context* context, unsigned char* data,
                         unsigned int buffer_size) {
     long max_read = buffer_size - 1;
     long received = 0;
@@ -106,16 +106,16 @@ long connection_receive(connection_context *context, unsigned char *data,
     return received;
 }
 
-char *connection_receive_string(connection_context *context) {
+char* connection_receive_string(connection_context* context) {
     // alloc
-    char *buf = calloc(1, 8192);
-    long size = connection_receive(context, (void *)buf, 8192 - 1);
+    char* buf = calloc(1, 8192);
+    long size = connection_receive(context, (void*)buf, 8192 - 1);
     printf("%ld \n", size);
     buf[size + 1] = '\0';
     return buf;
 }
 
-bool connection_close_and_free(connection_context *context) {
+bool connection_close_and_free(connection_context* context) {
     int returncode = close(context->_socket_handle);
     if (returncode < 0) {
         int errsv = errno;
@@ -126,7 +126,7 @@ bool connection_close_and_free(connection_context *context) {
     return true;
 }
 
-bool http1_get(const char *host, const char *path, char *response_buffer,
+bool http1_get(request* req, char* response_buffer,
                unsigned int response_buffer_size) {
 
     // STEP 1. use DNS lookup (via netdb.h) to get a valid server IP for the
@@ -134,25 +134,25 @@ bool http1_get(const char *host, const char *path, char *response_buffer,
 
     // todo gethostbyname is deprecated in favour of getaddrinfo, but this
     // requires a rewrite of the socket stuff above.
-    struct hostent *server =
-        gethostbyname(host); // overwritable static data, doesnt need freeing
+    struct hostent* server = gethostbyname(
+        req->host); // overwritable static data, doesnt need freeing
     if (server == NULL) {
         int errsv = h_errno;
-        fprintf(stderr, "Error: host %s not found. Error code %d: %s.\n", host,
-                errsv, strerror(errsv));
+        fprintf(stderr, "Error: host %s not found. Error code %d: %s.\n",
+                req->host, errsv, strerror(errsv));
         return false;
     }
 
-    struct in_addr *first_addr =
-        (struct in_addr *)
+    struct in_addr* first_addr =
+        (struct in_addr*)
             server->h_addr_list[0]; // i think this always has at least one ip
                                     // if the step above doesn't error
 
     // STEP 2. Setup TCP socket
 
     connection_context http_context = {
-        .adress = host, // not a valid server ip, but we use
-                        // connection_init_override_ip
+        .adress = req->host, // not a valid server ip, but we use
+                             // connection_init_override_ip
         .port = 80};
 
     connection_init_override_ip(&http_context, first_addr);
@@ -160,13 +160,13 @@ bool http1_get(const char *host, const char *path, char *response_buffer,
 
     // STEP 3. FORMAT AND SEND REQUEST
 
-    const char *get_format = "GET /%s HTTP/1.0\r\n\r\n";
+    const char* get_format = "GET /%s HTTP/1.0\r\n\r\n";
     char msg[1024]; // todo this might be too small
-    sprintf(msg, get_format, path);
+    sprintf(msg, get_format, req->path);
     connection_send_string(&http_context, msg);
 
     // STEP 4. RECEIVE REQUEST
-    char *resp = connection_receive_string(&http_context);
+    char* resp = connection_receive_string(&http_context);
     printf("%s\n", resp);
 
     free(resp);

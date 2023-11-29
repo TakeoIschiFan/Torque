@@ -1,4 +1,5 @@
 #pragma once
+#pragma clang diagnostic ignored "-Wincompatible-pointer-types"
 
 #include <stdbool.h>
 
@@ -19,6 +20,7 @@ typedef struct {
     };
 } bencode_item;
 
+// clang-format off
 typedef struct {
     unsigned int size;
     bencode_item** data;
@@ -29,6 +31,7 @@ typedef struct {
     char** keys;
     bencode_item** values;
 } bencode_dict;
+// clang-format on
 
 typedef struct {
     const unsigned char* raw;
@@ -43,7 +46,8 @@ typedef struct {
 bencode_item* decode_bencode_cstring(const char* cstr);
 
 // for lower level acces, request and free a bencode_context
-bencode_context* bencode_context_get(const unsigned char* buffer, const unsigned int size);
+bencode_context* bencode_context_get(const unsigned char* buffer,
+                                     const unsigned int size);
 
 // you should only need to call the general _item function.
 // you have to free the bencode_item using bencode_free
@@ -54,11 +58,8 @@ bencode_item* decode_bencode_list(bencode_context* context);
 bencode_item* decode_bencode_dict(bencode_context* context);
 void bencode_free(bencode_item* item);
 
-
 // utility functions
 void bencode_print(bencode_item* src);
 bencode_item* bencode_search(bencode_item* root, const char* key_name);
 
-
 bool bencode_tests(void);
-

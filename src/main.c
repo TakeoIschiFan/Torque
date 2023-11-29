@@ -3,8 +3,8 @@
 #include <stdbool.h>
 
 void tests(void) {
-    bool out = bencode_tests();
-    out = torrent_tests();
+    bencode_tests();
+    torrent_tests();
 }
 
 int main(void) {

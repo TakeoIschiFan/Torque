@@ -5,9 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-void parse_torrent_file(const char *file_path) {
+void parse_torrent_file(const char* file_path) {
 
-    FILE *torrent_file = fopen(file_path, "rb");
+    FILE* torrent_file = fopen(file_path, "rb");
     if (torrent_file == NULL) {
         fprintf(stderr, "Error, Could not open torrent file at %s", file_path);
         exit(1);
@@ -19,14 +19,14 @@ void parse_torrent_file(const char *file_path) {
     rewind(torrent_file);
 
     // read the entire file into memory
-    char *contents = malloc(size);
+    char* contents = malloc(size);
     fread(contents, size, 1, torrent_file);
 
-    bencode_context *context = bencode_context_get(contents, size);
-    bencode_item *item = decode_bencode_item(context);
+    bencode_context* context = bencode_context_get((void*)contents, size);
+    bencode_item* item = decode_bencode_item(context);
 
     // find general stuff
-    bencode_item *announce = bencode_search(item, "announce");
+    bencode_item* announce = bencode_search(item, "announce");
     if (announce == NULL) {
         fprintf(stderr, "Error: could not find *announce* field in .torrent "
                         "file, it might be wrongly formatted.");
@@ -35,7 +35,7 @@ void parse_torrent_file(const char *file_path) {
     printf("found announce url: %s\n", announce->string_data);
 
     // find info dictionary
-    bencode_item *info = bencode_search(item, "info");
+    bencode_item* info = bencode_search(item, "info");
     if (info == NULL) {
         fprintf(stderr, "Error: could not find *info* field in .torrent file, "
                         "it might be wrongly formatted.");
@@ -44,7 +44,7 @@ void parse_torrent_file(const char *file_path) {
 
     // check for multi file torrents. they have a "files" field in info instead
     // of a "name" field.
-    bencode_item *files = bencode_search(info, "files");
+    bencode_item* files = bencode_search(info, "files");
     if (!(files == NULL)) {
         fprintf(
             stderr,
@@ -53,7 +53,7 @@ void parse_torrent_file(const char *file_path) {
     }
 
     // check for private tracker
-    bencode_item *private = bencode_search(info, "private");
+    bencode_item* private = bencode_search(info, "private");
     if (!(private == NULL)) {
         if (private->int_data == 1) {
             fprintf(stderr, "Error: Torrent file requested private tracker, "
@@ -63,8 +63,8 @@ void parse_torrent_file(const char *file_path) {
     }
 
     // get raw info dictionary
-    const unsigned char *raw_info = malloc(context->_info_length);
-    memcpy((void *)raw_info, context->_info_start_ptr, context->_info_length);
+    const unsigned char* raw_info = malloc(context->_info_length);
+    memcpy((void*)raw_info, context->_info_start_ptr, context->_info_length);
 
     // sha1 encode that raw info dict
     SHA1_CTX sha;

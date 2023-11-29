@@ -19,7 +19,6 @@ A million repetitions of "a"
 
 #define SHA1HANDSOFF
 
-#include <stdio.h>
 #include <string.h>
 #include <sys/types.h> /* for u_int*_t */
 #if defined(__sun)
@@ -128,7 +127,7 @@ void SHA1Transform(u_int32_t state[5], const unsigned char buffer[64]) {
      * And the result is written through.  I threw a "const" in, hoping
      * this will cause a diagnostic.
      */
-    CHAR64LONG16 *block = (const CHAR64LONG16 *)buffer;
+    CHAR64LONG16* block = (const CHAR64LONG16*)buffer;
 #endif
     /* Copy context->state[] to working vars */
     a = state[0];
@@ -232,7 +231,7 @@ void SHA1Transform(u_int32_t state[5], const unsigned char buffer[64]) {
 
 /* SHA1Init - Initialize new context */
 
-void SHA1Init(SHA1_CTX *context) {
+void SHA1Init(SHA1_CTX* context) {
     /* SHA1 initialization constants */
     context->state[0] = 0x67452301;
     context->state[1] = 0xEFCDAB89;
@@ -244,7 +243,7 @@ void SHA1Init(SHA1_CTX *context) {
 
 /* Run your data through this. */
 
-void SHA1Update(SHA1_CTX *context, const unsigned char *data, u_int32_t len) {
+void SHA1Update(SHA1_CTX* context, const unsigned char* data, u_int32_t len) {
     u_int32_t i;
     u_int32_t j;
 
@@ -267,7 +266,7 @@ void SHA1Update(SHA1_CTX *context, const unsigned char *data, u_int32_t len) {
 
 /* Add padding and return the message digest. */
 
-void SHA1Final(unsigned char digest[20], SHA1_CTX *context) {
+void SHA1Final(unsigned char digest[20], SHA1_CTX* context) {
     unsigned i;
     unsigned char finalcount[8];
     unsigned char c;
