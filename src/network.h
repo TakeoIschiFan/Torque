@@ -28,21 +28,27 @@ char* connection_receive_string(connection_context* context);
 bool connection_close_and_free(connection_context* context);
 
 // high level http stuff
+typedef enum { GET, POST } request_verb;
+
 typedef struct {
     const char* key;
     const char* value;
 } query_param;
 
 typedef struct {
+    request_verb verb;
     const char* host;
     const char* path;
     query_param* params;
     unsigned int params_size;
-} request;
+} request_context;
 
-void add_request_param(const request* req, const char* key, const char* value);
+request_context* get_request_context(request_verb verb, char* url);
 
-bool http1_get(request* req, char* response_buffer,
-               unsigned int response_buffer_size);
+void add_request_param(request_context* req, const char* key,
+                       const char* value);
+
+bool execute_request(request_context* req, char* response_buffer,
+                     unsigned int response_buffer_size);
 
 bool network_tests(void);

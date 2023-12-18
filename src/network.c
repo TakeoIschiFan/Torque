@@ -147,16 +147,36 @@ char* url_encode(const unsigned char* data, const unsigned int size,
     return enc;
 };
 
-void add_request_param(const request* req, const char* key, const char* value);
+request_context* get_request_context(request_verb verb, char* url) {
 
-bool http1_get(request* req, char* response_buffer,
+    request_context* ctx = malloc(sizeof(request_context));
+    ctx->verb = verb;
+    // TODO split the URL in host and path;
+    ctx->host = url;
+    ctx->path = url;
+    ctx->params = malloc(sizeof(query_param*));
+    ctx->params_size = 0;
+
+    return ctx;
+}
+
+void add_request_param(request_context* req, const char* key,
+                       const char* value) {
+    req->params =
+        realloc(req->params, (req->params_size + 1) * sizeof(query_param));
+    req->params[req->params_size].key = key;
+    req->params[req->params_size].value = value;
+    req->params_size++;
+}
+
+bool http1_get(request_context* req, char* response_buffer,
                unsigned int response_buffer_size) {
 
     // STEP 1. use DNS lookup (via netdb.h) to get a valid server IP for the
     // host string.
 
     // TODO gethostbyname is deprecated in favour of getaddrinfo, but this
-    // requires a rewrite of the socket stuff above.
+    // requires a rewrite of the low level socket stuff above.
     struct hostent* server = gethostbyname(
         req->host); // overwritable static data, doesnt need freeing
     if (server == NULL) {
@@ -183,9 +203,29 @@ bool http1_get(request* req, char* response_buffer,
 
     // STEP 3. FORMAT AND SEND REQUEST
 
+    char query_string[1024] = {0}; // TODO this might be too small
+
+    strcat(query_string, req->path);
+
+    for (int i = 0; i < req->params_size; i++) {
+        if (i == 0) {
+            strcat(query_string, "?");
+        }
+        strcat(query_string, req->params[i].key);
+        strcat(query_string, "=");
+        strcat(query_string, req->params[i].value);
+        if (!(i == req->params_size - 1)) {
+            strcat(query_string, "&");
+        }
+    }
+
     const char* get_format = "GET /%s HTTP/1.0\r\n\r\n";
-    char msg[1024]; // todo this might be too small
-    sprintf(msg, get_format, req->path);
+    char msg[4096];
+
+    sprintf(msg, get_format, query_string);
+
+    printf("We will send the following message: \n%s\n", msg);
+    exit(1);
     connection_send_string(&http_context, msg);
 
     // STEP 4. RECEIVE REQUEST
@@ -196,6 +236,20 @@ bool http1_get(request* req, char* response_buffer,
 
     connection_close_and_free(&http_context);
     return true;
+}
+
+bool execute_request(request_context* req, char* response_buffer,
+                     unsigned int response_buffer_size) {
+    switch (req->verb) {
+    case GET: {
+        return http1_get(req, response_buffer, response_buffer_size);
+        break;
+    }
+    case POST:
+        break;
+    }
+
+    return false;
 }
 
 bool network_tests(void) {
@@ -214,5 +268,10 @@ bool network_tests(void) {
     assert(!strcmp(enc_data, "%28lmao%29%21"));
     free(enc_data);
 
+    request_context* test_context = get_request_context(GET, "example.com");
+    add_request_param(test_context, "lmao", "5");
+    add_request_param(test_context, "indeed", "96");
+
+    execute_request(test_context, (void*)NULL, 0);
     return true;
 }
