@@ -1,5 +1,7 @@
 #include "network.h"
 #include <arpa/inet.h> // gives inet_addr function & htons function
+#include <assert.h>
+#include <ctype.h>
 #include <errno.h>
 #include <netdb.h>      // dns lookup util
 #include <netinet/in.h> // gives server_addr_sin
@@ -126,13 +128,34 @@ bool connection_close_and_free(connection_context* context) {
     return true;
 }
 
+// enc should be a zero'd buffer at least 3n+1 times the size of the input data.
+char* url_encode(const unsigned char* data, const unsigned int size,
+                 char* enc) {
+
+    for (int i = 0; i < size; i++) {
+        char c = data[i];
+        if (isalnum(c) || c == '*' || c == '-' || c == '.' || c == '_') {
+            *enc = c;
+        } else if (c == ' ') {
+            *enc = '+';
+        } else {
+            sprintf(enc, "%%%02X", c);
+        }
+        while (*++enc)
+            ;
+    }
+    return enc;
+};
+
+void add_request_param(const request* req, const char* key, const char* value);
+
 bool http1_get(request* req, char* response_buffer,
                unsigned int response_buffer_size) {
 
     // STEP 1. use DNS lookup (via netdb.h) to get a valid server IP for the
     // host string.
 
-    // todo gethostbyname is deprecated in favour of getaddrinfo, but this
+    // TODO gethostbyname is deprecated in favour of getaddrinfo, but this
     // requires a rewrite of the socket stuff above.
     struct hostent* server = gethostbyname(
         req->host); // overwritable static data, doesnt need freeing
@@ -172,5 +195,24 @@ bool http1_get(request* req, char* response_buffer,
     free(resp);
 
     connection_close_and_free(&http_context);
+    return true;
+}
+
+bool network_tests(void) {
+    // tests url url_encode
+    char* data = "s p a c e";
+    char* enc_data = calloc(3 * strlen(data) + 1, 1);
+    url_encode(data, strlen(data), enc_data);
+
+    assert(!strcmp(enc_data, "s+p+a+c+e"));
+    free(enc_data);
+
+    data = "(lmao)!";
+    enc_data = calloc(3 * strlen(data) + 1, 1);
+    url_encode(data, strlen(data), enc_data);
+
+    assert(!strcmp(enc_data, "%28lmao%29%21"));
+    free(enc_data);
+
     return true;
 }
