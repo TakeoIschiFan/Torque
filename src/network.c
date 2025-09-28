@@ -160,10 +160,6 @@ connection_context* connection_init(const char* ip_address, u16 port) {
 
 connection_context* connection_init_from_url(const url* url) {
     connection_context* ctx = malloc(sizeof(connection_context));
-    if (ctx == null) {
-        fprintf(stderr, "Error: failed to allocate memory for connection context\n");
-        return null;
-    }
 
     struct addrinfo hints = {0};
     char port_str[16];
@@ -196,7 +192,6 @@ connection_context* connection_init_from_url(const url* url) {
             ctx->_socket_handle = (u32)sock;
             break;
         }
-
         close(sock);
         sock = -1;
     }

@@ -98,7 +98,6 @@ NAP_TEST bencode_byte_string_tests(void) {
     bencode_item* r;
     bencode_context* ctx;
 
-
     // Valid ASCII
     r = decode_bencode_cstring("4:spam");
     nap_assert(r->type == BENCODE_STRING);
@@ -121,6 +120,7 @@ NAP_TEST bencode_byte_string_tests(void) {
     nap_assert(r->byte_string_data->size == 5);
     nap_assert(memcmp(r->byte_string_data->data, binary_bytes, 5) == 0);
     bencode_free(r);
+    free(ctx);
 
     // UTF-8 / non-ASCII
     const u8 utf8_bytes[] = {0xe3,0x81,0x82, 0xe3,0x81,0x84}; // "あい"
@@ -131,6 +131,7 @@ NAP_TEST bencode_byte_string_tests(void) {
     nap_assert(r->byte_string_data->size == 6);
     nap_assert(memcmp(r->byte_string_data->data, utf8_bytes, 6) == 0);
     bencode_free(r);
+    free(ctx);
 
     // Negative length
     r = decode_bencode_cstring("-1:abc");
@@ -151,6 +152,7 @@ NAP_TEST bencode_byte_string_tests(void) {
     nap_assert(r->type == BENCODE_INVALID);
     nap_assert(r->error == BENCODE_ERROR_BYTE_STRING_EOF_BEFORE_COMPLETING_STRING);
     bencode_free(r);
+    free(ctx);
 
     // ridiculous length
     r = decode_bencode_cstring("123456789123456789123456789123456789123456789:abc");
@@ -326,6 +328,7 @@ NAP_TEST bencode_dict_tests(void) {
     nap_assert(ctx->_info_start_ptr != NULL);
     nap_assert(ctx->_info_length > 0);
     bencode_free(r);
+    free(ctx);
 }
 
 NAP_TEST bencode_search_tests(void) {

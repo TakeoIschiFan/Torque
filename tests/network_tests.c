@@ -48,18 +48,22 @@ NAP_TEST url_parse_tests(void) {
     // invalid port (>65535)
     result = url_parse("http://badport.com:99999");
     nap_assert(result == null);
+    free(result);
 
     // missing host
     result = url_parse("http://:8080");
     nap_assert(result == null);
+    free(result);
 
     // missing scheme
     result = url_parse("localhost:9405");
     nap_assert(result == null);
+    free(result);
 
     // completely invalid
     result = url_parse("not a url");
     nap_assert(result == null);
+    free(result);
 }
 
 NAP_TEST url_encode_bytes_tests(void) {
@@ -134,7 +138,7 @@ NAP_TEST connection_init_from_url_tests(void) {
     connection_close_and_free(ctx);
     pclose(ncat_proc);
 
-    // invalid host should fail
+    //invalid host should fail
     url* bad = url_parse("http://nonexistent.host:9501/");
     connection_context* ctx_b = connection_init_from_url(bad);
     nap_assert(ctx_b == null);

@@ -42,15 +42,19 @@ run: $(MAIN_EXEC)
 test: $(TEST_EXEC)
 	$(TEST_EXEC)
 
+.PHONY: leakcheck
+leakcheck: $(TEST_EXEC)
+	valgrind --leak-check=full --show-leak-kinds=definite,indirect,possible --track-origins=yes $(TEST_EXEC)
+
 .PHONY: cov
 cov: clean test
 	@if [ "$(CC)" != "gcc" ]; then \
 		echo "Error: CC must be gcc for generating code coverage, current: $(CC)"; \
 		exit 1; \
 	fi
-	lcov --gcov-tool /bin/gcov --quiet --rc branch_coverage=1 --capture --directory build --output-file build/coverage.info
-	lcov --remove build/coverage.info 'tests/*'
-	genhtml build/coverage.info --output-directory build/coverage-html
+	lcov --gcov-tool /bin/gcov --quiet --rc branch_coverage=1 --capture --directory $(BUILD_DIR) --output-file $(BUILD_DIR)/coverage.info
+	lcov --remove $(BUILD_DIR)/coverage.info 'tests/*'
+	genhtml $(BUILD_DIR)/coverage.info --output-directory $(BUILD_DIR)/coverage-html
 
 
 
