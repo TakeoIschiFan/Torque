@@ -8,8 +8,8 @@ TEST_OBJS = $(patsubst $(TEST_DIR)/%.c,$(BUILD_DIR)/tests/%.o,$(TEST_FILES))
 MAIN_EXEC = $(BUILD_DIR)/torque
 TEST_EXEC = $(BUILD_DIR)/torque_tests
 
-CC = clang
-CFLAGS = -g -Wall -Wextra -pedantic -I$(SRC_DIR) -I$(TEST_DIR)
+CC = gcc
+CFLAGS = -g -Wall -Wextra -pedantic --coverage -I$(SRC_DIR) -I$(TEST_DIR)
 
 .PHONY: all
 all: $(BUILD_DIR) $(MAIN_EXEC) $(TEST_EXEC)
@@ -41,3 +41,16 @@ run: $(MAIN_EXEC)
 .PHONY: test
 test: $(TEST_EXEC)
 	$(TEST_EXEC)
+
+.PHONY: cov
+cov: clean test
+	@if [ "$(CC)" != "gcc" ]; then \
+		echo "Error: CC must be gcc for generating code coverage, current: $(CC)"; \
+		exit 1; \
+	fi
+	lcov --gcov-tool /bin/gcov --quiet --rc branch_coverage=1 --capture --directory build --output-file build/coverage.info
+	lcov --remove build/coverage.info 'tests/*'
+	genhtml build/coverage.info --output-directory build/coverage-html
+
+
+
