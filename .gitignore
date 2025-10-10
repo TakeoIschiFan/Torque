@@ -2,3 +2,5 @@ torque
 core
 build
 *.kdev4
+tests/fns.torrent
+tests/fns.ts

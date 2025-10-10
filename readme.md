@@ -44,8 +44,9 @@ Development status
 ## Resources
 
 - I am following this [great article by Jesse Li](https://blog.jse.li/posts/torrent/) who did something similar in Go.
-- Initial inspiration for this project came from a Rust video by [Jon Gjengset](https://www.youtube.com/watch?v=jf_ddGnum_4): implementing a bittorrent client using the (paid) *Build your own BitTorrent* course at [codecrafters.io](https://app.codecrafters.io/catalog)
+- Initial inspiration for this project came from a [Rust video by Jon Gjengset](https://www.youtube.com/watch?v=jf_ddGnum_4): implementing a bittorrent client using the (paid) *Build your own BitTorrent* course at [codecrafters.io](https://app.codecrafters.io/catalog)
 - SHA1 implementation copied from [Steve Reid](https://gist.github.com/jrabbit/1042021)
+- Concurrency code mainly from ["Operating Systems: Three Easy Pieces" by Arpaci-Dusseau](https://pages.cs.wisc.edu/~remzi/OSTEP/)
 
 ## Usage
 

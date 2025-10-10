@@ -35,7 +35,7 @@ void bencode_print(bencode_item* src) {
             printf("%lld", (long long)src->int_data);
             break;
 
-        case BENCODE_STRING: {
+        case BENCODE_BYTE_STRING: {
             bencode_byte_string* bs = src->byte_string_data;
             fwrite(bs->data, 1, bs->size, stdout);
             break;
@@ -102,7 +102,7 @@ void bencode_free(bencode_item* item) {
     switch (item->type) {
         case BENCODE_INT: break;
 
-        case BENCODE_STRING: {
+        case BENCODE_BYTE_STRING: {
             bencode_byte_string* bs = item->byte_string_data;
             if (bs) {
                 free(bs->data);
@@ -299,7 +299,7 @@ bencode_item* decode_bencode_byte_string(bencode_context* context) {
     context->cursor += length;
 
     bencode_item* out = malloc(sizeof(bencode_item));
-    out->type = BENCODE_STRING;
+    out->type = BENCODE_BYTE_STRING;
     out->byte_string_data = bs;
 
     return out;
@@ -359,7 +359,7 @@ bencode_item* decode_bencode_dict(bencode_context* context) {
         // decode key
         bencode_item* key_item = decode_bencode_item(context);
 
-        if (key_item->type != BENCODE_STRING) {
+        if (key_item->type != BENCODE_BYTE_STRING) {
             bencode_free(key_item);
             for (usize i = 0; i < dict->size; i++) {
                 free(dict->keys[i]->data);  // internal buffer

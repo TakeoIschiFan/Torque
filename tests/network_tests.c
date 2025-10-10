@@ -185,6 +185,7 @@ NAP_TEST connection_receive_short_buffer(void) {
 
     u8 buf[1024];
     usize read = connection_receive(ctx, buf, 4);
+    nap_assert(read == 4);
     nap_assert(strncmp((char*)buf, "test", 4) == 0);
 
     connection_close_and_free(ctx);
@@ -201,6 +202,7 @@ NAP_TEST connection_receive_large_buffer(void) {
 
     u8 buf[1024];
     usize read = connection_receive(ctx, buf, 1024);
+    nap_assert(read == 4);
     nap_assert(strncmp((char*)buf, "test", 4) == 0);
 
     connection_close_and_free(ctx);

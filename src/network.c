@@ -158,6 +158,42 @@ connection_context* connection_init(const char* ip_address, u16 port) {
     return ctx;
 }
 
+connection_context* connection_init_addr(in_addr_t address, u16 port) {
+    connection_context* ctx = malloc(sizeof(connection_context));
+
+
+    ctx->adress = "unavailable";
+    ctx->port = port;
+
+    ctx->_server_addr.sin_family = AF_INET;
+    ctx->_server_addr.sin_addr.s_addr = address;
+    ctx->_server_addr.sin_port = htons(port);
+
+    i32 sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock < 0) {
+        i32 errsv = errno;
+        fprintf(stderr,
+                "Error: could not initialize socket. Error code %d: %s. "
+                "Check address and port and try again\n",
+                errsv, strerror(errsv));
+        free(ctx);
+        return null;
+    }
+
+    ctx->_socket_handle = (u32)sock;
+
+    i32 returncode = connect(sock, (void*)(&ctx->_server_addr), sizeof(ctx->_server_addr));
+    if (returncode != 0) {
+        i32 errsv = errno;
+        fprintf(stderr, "Error: could not open socket. Error code %d: %s. " "Is the server available?\n", errsv, strerror(errsv));
+        close(sock);
+        free(ctx);
+        return null;
+    }
+    return ctx;
+}
+
+
 connection_context* connection_init_from_url(const url* url) {
     connection_context* ctx = malloc(sizeof(connection_context));
 
@@ -247,9 +283,6 @@ void connection_send_http_get(connection_context* context, url* url, http_url_pa
 
     char msg[8192];
     sprintf(msg, "GET %s HTTP/1.0\r\n\r\n", query_string);
-
-    printf("We will send the following message: \n%s\n to host %s\n", msg, url->host);
-
     connection_send_string(context, msg);
 }
 
@@ -268,10 +301,6 @@ usize connection_receive(connection_context* context, u8* data, usize buffer_siz
         received += (usize)bytes_read;
     }
 
-    if (received == max_read) {
-        fprintf(stderr, "Warning: response too large for the buffer allocated to connection_receive\n");
-    }
-
     return received;
 }
 
@@ -283,10 +312,6 @@ char* connection_receive_string(connection_context* context) {
     usize size = connection_receive(context, (u8*)buf, buf_size - 1);
     buf[size] = '\0';
     return buf;
-}
-
-char* connection_receive_http(connection_context* context) {
-    return null;
 }
 
 void connection_close_and_free(connection_context* context) {

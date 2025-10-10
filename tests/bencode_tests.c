@@ -100,14 +100,14 @@ NAP_TEST bencode_byte_string_tests(void) {
 
     // Valid ASCII
     r = decode_bencode_cstring("4:spam");
-    nap_assert(r->type == BENCODE_STRING);
+    nap_assert(r->type == BENCODE_BYTE_STRING);
     nap_assert(r->byte_string_data->size == 4);
     nap_assert(memcmp(r->byte_string_data->data, "spam", 4) == 0);
     bencode_free(r);
 
     // Zero-length string
     r = decode_bencode_cstring("0:");
-    nap_assert(r->type == BENCODE_STRING);
+    nap_assert(r->type == BENCODE_BYTE_STRING);
     nap_assert(r->byte_string_data->size == 0);
     bencode_free(r);
 
@@ -116,7 +116,7 @@ NAP_TEST bencode_byte_string_tests(void) {
     const u8 bin_bencode[] = {'5', ':', 'a','\0','b','\0','c'};
     ctx = bencode_context_get(bin_bencode, sizeof(bin_bencode));
     r = decode_bencode_item(ctx);
-    nap_assert(r->type == BENCODE_STRING);
+    nap_assert(r->type == BENCODE_BYTE_STRING);
     nap_assert(r->byte_string_data->size == 5);
     nap_assert(memcmp(r->byte_string_data->data, binary_bytes, 5) == 0);
     bencode_free(r);
@@ -127,7 +127,7 @@ NAP_TEST bencode_byte_string_tests(void) {
     const u8 utf8_bencode[] = {'6', ':', 0xe3,0x81,0x82,0xe3,0x81,0x84};
     ctx = bencode_context_get(utf8_bencode, sizeof(utf8_bencode));
     r = decode_bencode_item(ctx);
-    nap_assert(r->type == BENCODE_STRING);
+    nap_assert(r->type == BENCODE_BYTE_STRING);
     nap_assert(r->byte_string_data->size == 6);
     nap_assert(memcmp(r->byte_string_data->data, utf8_bytes, 6) == 0);
     bencode_free(r);
@@ -183,7 +183,7 @@ NAP_TEST bencode_list_tests(void) {
     nap_assert(r->type == BENCODE_LIST);
     nap_assert(r->list_data->size == 3);
     nap_assert(r->list_data->data[0]->int_data == 5);
-    nap_assert(r->list_data->data[1]->type == BENCODE_STRING);
+    nap_assert(r->list_data->data[1]->type == BENCODE_BYTE_STRING);
     nap_assert(r->list_data->data[1]->byte_string_data->size == 4);
     nap_assert(memcmp(r->list_data->data[1]->byte_string_data->data, "spam", 4) == 0);
     nap_assert(r->list_data->data[2]->type == BENCODE_LIST);
@@ -274,7 +274,7 @@ NAP_TEST bencode_dict_tests(void) {
 
     nap_assert(dict->keys[0]->size == 3 &&
     memcmp(dict->keys[0]->data, "foo", 3) == 0);
-    nap_assert(dict->values[0]->type == BENCODE_STRING &&
+    nap_assert(dict->values[0]->type == BENCODE_BYTE_STRING &&
     dict->values[0]->byte_string_data->size == 3 &&
     memcmp(dict->values[0]->byte_string_data->data, "bar", 3) == 0);
 
@@ -338,7 +338,7 @@ NAP_TEST bencode_search_tests(void) {
 
     bencode_item* result = bencode_search(dict, "foo");
     nap_assert(result != NULL);
-    nap_assert(result->type == BENCODE_STRING);
+    nap_assert(result->type == BENCODE_BYTE_STRING);
     nap_assert(result->byte_string_data->size == 3);
     nap_assert(memcmp(result->byte_string_data->data, "bar", 3) == 0);
 
@@ -359,12 +359,12 @@ NAP_TEST bencode_search_tests(void) {
 
     result = bencode_search(dict, "key");
     nap_assert(result != NULL);
-    nap_assert(result->type == BENCODE_STRING);
+    nap_assert(result->type == BENCODE_BYTE_STRING);
     nap_assert(memcmp(result->byte_string_data->data, "val", 3) == 0);
 
     result = bencode_search(dict, "foo");
     nap_assert(result != NULL);
-    nap_assert(result->type == BENCODE_STRING);
+    nap_assert(result->type == BENCODE_BYTE_STRING);
     nap_assert(memcmp(result->byte_string_data->data, "bar", 3) == 0);
 
     result = bencode_search(dict, "baz");

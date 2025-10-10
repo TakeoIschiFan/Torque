@@ -39,6 +39,7 @@ url* url_parse(const char* url_str);
 connection_context* connection_init(const char* ip_adress, u16 port);
 // returns null when creating connection context fails (url has to be alive
 // too!)
+connection_context* connection_init_addr(in_addr_t address, u16 port);
 connection_context* connection_init_from_url(const url* url);
 
 void connection_send(connection_context* context, u8* data,
