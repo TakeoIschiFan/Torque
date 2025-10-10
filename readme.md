@@ -13,34 +13,7 @@ It includes:
 - A multi-threaded torrent part downloader & validator.
 - A CLI argument parser.
 
-I have tried to keep the source code as clean and minimal as possible so it should be quite readable for anyone who wants to take a look at the code. I am also planning on making a blog post write-up once the project is finished.
-
-Development status
-- [x] Bencode parser
-    - [x] Parsing of bencode strings, ints
-    - [x] Parsing of bencode dicts, lists, simple bencode files
-    - [x] Parsing of .torrent files
-- [x] TCP client
-	- [x] Implement connect, close, send receive functions
-	- [x] Able to ping-pong a echo server
-- [x] HTTP client
-	- [x] DNS lookup to get server IPs from hostnames
-	- [x] HTTP GET
-		Able to get HTTP 200 HTML data from [example.com](example.com)
-		Query parameters unsupported for now
-- [x] Core torrent stuff
-	- [x] Parse a torrent file and extract the info hashes
-	- [x] Connect to a tracker, retrieve list of peers
-	- [ ] Downloading from peers
-		- [ ] Complete Bittorrent handshake
-		- [ ] Parse downloadable data from peer using bitfields
-		- [ ] Pipelining
-		- [ ] Assemble file and validate using the hash
-- [ ] Cleanup
-	- [ ] CLI interface with help command
-	- [ ] Unit tests & better error handling
-	- [ ] Improve readme
-
+And complies with [BEP0003](https://www.bittorrent.org/beps/bep_0003.html), [BEP0015](https://www.bittorrent.org/beps/bep_0015.html) and [BEP0023](https://www.bittorrent.org/beps/bep_0023.html)
 ## Resources
 
 - I am following this [great article by Jesse Li](https://blog.jse.li/posts/torrent/) who did something similar in Go.
