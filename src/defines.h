@@ -1,7 +1,8 @@
 #pragma once
 
-#include <stdint.h>
+#include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 
 typedef uint8_t u8;
 typedef uint16_t u16;
@@ -18,7 +19,7 @@ typedef size_t usize;
 typedef float f32;
 typedef double f64;
 
-typedef _Bool b8;
+typedef bool b8;
 
 #define true 1
 #define false 0
