@@ -9,7 +9,7 @@ MAIN_EXEC = $(BUILD_DIR)/torque
 TEST_EXEC = $(BUILD_DIR)/torque_tests
 
 CC = gcc
-CFLAGS = -g -Wall -Wextra -pedantic --coverage -I$(SRC_DIR) -I$(TEST_DIR)
+CFLAGS = -g -Wall -Wextra -pedantic --coverage -std=gnu11 -I$(SRC_DIR) -I$(TEST_DIR)
 
 .PHONY: all
 all: $(BUILD_DIR) $(MAIN_EXEC) $(TEST_EXEC)
